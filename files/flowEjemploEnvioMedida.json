@@ -1,0 +1,185 @@
+[
+    {
+        "id": "8d3f0afe2a5455f1",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "132a21af7481041d",
+        "type": "http request",
+        "z": "8d3f0afe2a5455f1",
+        "name": "POST request",
+        "method": "POST",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "https://raspy-flower-lungfish.glitch.me//ifttt/v1/triggers/temp_above",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "authType": "",
+        "senderr": false,
+        "headers": [
+            {
+                "keyType": "Content-Type",
+                "keyValue": "",
+                "valueType": "other",
+                "valueValue": "application/json"
+            },
+            {
+                "keyType": "Accept",
+                "keyValue": "",
+                "valueType": "other",
+                "valueValue": "*/*"
+            },
+            {
+                "keyType": "Accept-Encoding",
+                "keyValue": "",
+                "valueType": "other",
+                "valueValue": "gzip, deflate, br"
+            },
+            {
+                "keyType": "other",
+                "keyValue": "IFTTT-Service-Key",
+                "valueType": "other",
+                "valueValue": "o3upZAljC5idqJjRIRPIU6hyye83ae0aXshj-YsNW1FrvI9Vd5OcTGnax8VIxBpy"
+            }
+        ],
+        "x": 780,
+        "y": 40,
+        "wires": [
+            [
+                "d682318c.36823"
+            ]
+        ]
+    },
+    {
+        "id": "d682318c.36823",
+        "type": "debug",
+        "z": "8d3f0afe2a5455f1",
+        "name": "events",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 950,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "e67a0cc.596d4f",
+        "type": "change",
+        "z": "8d3f0afe2a5455f1",
+        "name": "set http body",
+        "rules": [
+            {
+                "t": "set",
+                "p": "req.body",
+                "pt": "msg",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 590,
+        "y": 40,
+        "wires": [
+            [
+                "132a21af7481041d"
+            ]
+        ]
+    },
+    {
+        "id": "da69119c19da49dd",
+        "type": "mqtt in",
+        "z": "8d3f0afe2a5455f1",
+        "name": "",
+        "topic": "IAQ_Measures",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "9bb8382a5cc0f7e3",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 100,
+        "y": 40,
+        "wires": [
+            [
+                "a6fe95b3895d116d"
+            ]
+        ]
+    },
+    {
+        "id": "a6fe95b3895d116d",
+        "type": "json",
+        "z": "8d3f0afe2a5455f1",
+        "name": "",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 270,
+        "y": 40,
+        "wires": [
+            [
+                "21125356d43d5d65"
+            ]
+        ]
+    },
+    {
+        "id": "21125356d43d5d65",
+        "type": "function",
+        "z": "8d3f0afe2a5455f1",
+        "name": "function 1",
+        "func": "msg.payload = { \"trigger_identity\": \"f5bbd2d949a754cbaefef9afaac6fe442aa86164\", \"triggerFields\": { \"temp_threshold\": \"25\" }, \"user\": { \"timezone\": \"America/Los_Angeles\" }, \"ifttt_source\": { \"id\": \"19148132cff536aa\", \"url\": \"http://example.com/19148132cff536aa\" }, \"temperature\": msg.payload.measures[5].v}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 420,
+        "y": 40,
+        "wires": [
+            [
+                "e67a0cc.596d4f"
+            ]
+        ]
+    },
+    {
+        "id": "9bb8382a5cc0f7e3",
+        "type": "mqtt-broker",
+        "name": "IAQ",
+        "broker": "172.16.30.161",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    }
+]

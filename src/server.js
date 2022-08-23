@@ -221,7 +221,7 @@ app.post('/ifttt/v1/triggers/temp_above', async (req, res) => {
   }
   
   const tempThreshold = parseFloat(req.body.triggerFields.temp_threshold)
-  const limit = (req.body.limit !== null) ? req.body.limit : 50
+  const limit = (req.body.limit !== undefined) ? req.body.limit : 50
   //const limit = 50
   const document = await getTriggerIdentity(triggerIdentity)
   
@@ -238,7 +238,11 @@ app.post('/ifttt/v1/triggers/temp_above', async (req, res) => {
   
   console.log(`Getting temperatures`)
   
-  const tempMeasure = Math.random() * (40 - 15) + 15
+  // TODO - Sacar la temperatura del cuerpo de la petición
+  
+  //const tempMeasure = Math.random() * (40 - 15) + 15
+  
+  const tempMeasure = (req.body.temperature !== null) ? parseFloat(req.body.temperature) : 0
   
   console.log(tempMeasure)
   
