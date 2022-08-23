@@ -1,5 +1,8 @@
 // server.js
 
+// TODO - Comprobar que se pueden quitar los try - finally intentando acceder al server desde
+// dos instancias distintas
+
 // init project
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -68,6 +71,9 @@ const addEvent = async (paramTriggerIdentity, event) => {
           eventsArr = data
         }
         eventsArr.unshift(event)
+        if (eventsArr.length > 50) {
+          eventsArr.pop()
+        }
         mongoCollection.updateOne({ triggerIdentity: paramTriggerIdentity }, { $set: { events: eventsArr } })
       }
       else {
@@ -79,18 +85,18 @@ const addEvent = async (paramTriggerIdentity, event) => {
   }
 }
 
-const deleteTriggerIdentityField = async (paramTriggerIdentity, field) => {
+const deleteTriggerIdentityField = async (paramTriggerIdentity, field) => { // Esto no se usa, lol
   try {
-    console.log(`Adding event ${event.meta.id} to triggerIdentity ${paramTriggerIdentity}`)
+    console.log(`deleting field ${field} from triggerIdentity ${paramTriggerIdentity}`)
     //client.connect()
     const database = client.db('prueba_mongo')
     const mongoCollection = database.collection('triggerIdentities')
     const document = mongoCollection.findOne({ triggerIdentity: paramTriggerIdentity })
     
-    if (document !== null) { //Este if está mal, hay que revisarlo
+    if (document !== null) {
       const data = document.field
       let eventsArr = []
-      if (Object.prototype.hasOwnProperty.call(data, field)) {
+      if (data !== null) {
         await mongoCollection.updateOne({ triggerIdentity: paramTriggerIdentity }, { $set: { field: "" } }) // Mñe, no me convence, creo que estámal
         console.log('Deleted field')
       }
@@ -144,7 +150,7 @@ const getEvents = async (paramTriggerIdentity, limit) => {
       return []
     }
     
-    const data = document.events //Esto hay que revisar a ver que hace exactamente
+    const data = document.events
     //if (!Object.prototype.hasOwnProperty.call(data, 'events')) {
     if (data == null) {
       console.log(`Events array is empty for triggerIdentity ${paramTriggerIdentity}`)
@@ -220,6 +226,12 @@ app.post('/ifttt/v1/triggers/temp_above', async (req, res) => {
     })
   }
   
+  // TODO Comprobar si es petición inicial/poll o una de Node-RED. Si no es de Node-RED,
+  // hacer una petición http a Node-RED que guarde en variables globales la medida que se
+  // quiere tomar, etc. (p. ej. temp). En Node-RED habría que hacer que cuando se publica
+  // una medida, envíe en la petición el valor de lo que se tiene almacenado en esa
+  // variable global
+  
   const tempThreshold = parseFloat(req.body.triggerFields.temp_threshold)
   const limit = (req.body.limit !== undefined) ? req.body.limit : 50
   //const limit = 50
@@ -242,13 +254,13 @@ app.post('/ifttt/v1/triggers/temp_above', async (req, res) => {
   
   //const tempMeasure = Math.random() * (40 - 15) + 15
   
-  const tempMeasure = (req.body.temperature !== null) ? parseFloat(req.body.temperature) : 0
+  const tempMeasure = (req.body.temperature !== undefined) ? parseFloat(req.body.temperature) : 0
   
   console.log(tempMeasure)
   
   if (tempMeasure >= tempThreshold) {
     console.log('Temperature is above threshold')
-    console.log('Generatin trigger data')
+    console.log('Generating trigger data')
     
     updateTriggerIdentity(triggerIdentity, { lastNotification: tempMeasure })
     const event = {
