@@ -30,20 +30,32 @@ app.set('views', path.join(__dirname, '/views'));
 
 const addDocument = async (collection, id, doc) => {
   console.log(`Adding document ${id} to collection ${collection}`)
+  try {
+    //client.connect()
     const database = client.db('prueba_mongo')
     const mongoCollection = database.collection(collection)
     await mongoCollection.insertOne(doc)
+  } finally {
+    //await client.close()
+  }
 }
 
 const updateTriggerIdentity = async (paramTriggerIdentity, updateProp) => {
+  try {
     console.log(`Updating trigger identity ${paramTriggerIdentity}`)
+    //client.connect()
     const database = client.db('prueba_mongo')
     const mongoCollection = database.collection('triggerIdentities')
     await mongoCollection.updateOne({ triggerIdentity: paramTriggerIdentity }, { $set: updateProp })
+  } finally {
+    //await client.close()
+  }
 }
 
 const addEvent = async (paramTriggerIdentity, event) => {
+  try {
     console.log(`Adding event ${event.meta.id} to triggerIdentity ${paramTriggerIdentity}`)
+    //client.connect()
     const database = client.db('prueba_mongo')
     const mongoCollection = database.collection('triggerIdentities')
     const document = mongoCollection.findOne({ triggerIdentity: paramTriggerIdentity })
@@ -59,20 +71,24 @@ const addEvent = async (paramTriggerIdentity, event) => {
           eventsArr = data
         }
         eventsArr.unshift(event)
-        /*if (eventsArr.length > 50) {
+        if (eventsArr.length > 50) {
           eventsArr.pop()
-        }*/
+        }
         mongoCollection.updateOne({ triggerIdentity: paramTriggerIdentity }, { $set: { events: eventsArr } })
       }
       else {
         console.log('Document does nos exist for triggerIdentity ', paramTriggerIdentity)
       }
     })
+  } finally {
+    //await client.close()
+  }
 }
 
 const deleteTriggerIdentityField = async (paramTriggerIdentity, field) => { // Esto no se usa, lol
+  try {
     console.log(`deleting field ${field} from triggerIdentity ${paramTriggerIdentity}`)
-    
+    //client.connect()
     const database = client.db('prueba_mongo')
     const mongoCollection = database.collection('triggerIdentities')
     const document = mongoCollection.findOne({ triggerIdentity: paramTriggerIdentity })
@@ -89,29 +105,43 @@ const deleteTriggerIdentityField = async (paramTriggerIdentity, field) => { // E
     else {
       console.log('Document does not exist for triggerIdentity ', paramTriggerIdentity)
     }
+  } finally {
+    //await client.close()
+  }
 }
 
 const getTriggerIdentity = async (paramTriggerIdentity) => {
+  try {
     console.log(`Get triggerIdentity ${paramTriggerIdentity}`)
-    
+    //client.connect()
     const database = client.db('prueba_mongo')
     const mongoCollection = database.collection('triggerIdentities')
     return await mongoCollection.findOne({ triggerIdentity: paramTriggerIdentity })
+  } finally {
+    //await client.close()
+  }
 }
 
 const deleteTriggerIdentity = async (paramTriggerIdentity) => {
+  try {
     console.log(`Delete triggerIdentity ${paramTriggerIdentity}`)
+    //client.connect()
     const database = client.db('prueba_mongo')
     const mongoCollection = database.collection('triggerIdentities')
     await mongoCollection.deleteOne({ triggerIdentity: paramTriggerIdentity })
+  } finally {
+    //await client.close()
+  }
 }
 
 const getEvents = async (paramTriggerIdentity, limit) => {
+  try {
     console.log('Getting events array, limit is ', limit)
     if (limit <= 0) {
       return []
     }
     
+    //client.connect()
     const database = client.db('prueba_mongo')
     const mongoCollection = database.collection('triggerIdentities')
     const document = await mongoCollection.findOne({ triggerIdentity: paramTriggerIdentity })
@@ -131,15 +161,9 @@ const getEvents = async (paramTriggerIdentity, limit) => {
     const events = data.slice(0, limit)
     console.log('Events size is ', events.length)
     return events
-}
-
-const addNewPetition = async (doc, paramTriggerIdentity) => {
-    console.log(`Adding new trigger with triggerIdentity ${paramTriggerIdentity} to database`)
-    
-    const database = client.db('prueba_mongo')
-    const mongoCollection = database.collection('nodered_petitions')
-    
-    await mongoCollection.insertOne(doc)
+  } finally {
+    //await client.close()
+  }
 }
 
 // The status
@@ -155,12 +179,6 @@ app.post('/ifttt/v1/test/setup', middleware.serviceKeyCheck, (req, res) => {
         "triggers": {
           "temp_above": {
             temp_threshold: '30' 
-          },
-          "measure": {
-            uuid: 'test',
-            measure: 'test',
-            threshold: '20',
-            above_below: '<'
           }
         }
       }
@@ -212,33 +230,15 @@ app.post('/ifttt/v1/triggers/temp_above', async (req, res) => {
   // hacer una petición http a Node-RED que guarde en variables globales la medida que se
   // quiere tomar, etc. (p. ej. temp). En Node-RED habría que hacer que cuando se publica
   // una medida, envíe en la petición el valor de lo que se tiene almacenado en esa
-  // variable global. Puede ser una variable global que se llame como el UUID del IAQ y
-  // que dentro guarde un JSON con toda la info.
-  
-  // Otra opción es tener esta info. en una base de datos en Mongodb o donde sea y que
-  // Node-RED pida los datos de la petición de ese IAQ cada vez que publique
+  // variable global
   
   const tempThreshold = parseFloat(req.body.triggerFields.temp_threshold)
   const limit = (req.body.limit !== undefined) ? req.body.limit : 50
   //const limit = 50
   const document = await getTriggerIdentity(triggerIdentity)
   
-  if (req.body.initial === undefined || req.body.initial === 1) {
-    const docAux = {
-      // Esto esta un poquito hardcodeado hasta que se puedan meter como parámetro al crear el trigger
-      UUID: '7179d7d6-0f75-4b23-905b-16d670a7f7e1',
-      measure: "voc",
-      triggerIdentity: triggerIdentity,
-      tempThreshold: tempThreshold,
-      ifttt_source: req.body.ifttt_source,
-      user: req.body.user
-    }
-    addNewPetition(docAux, triggerIdentity)
-  }
-  
   if (document == null) {
     const doc = {
-      // Añadir aquí el UUID del IAQ??
       triggerIdentity: triggerIdentity,
       tempThreshold: tempThreshold,
       events: []
@@ -248,10 +248,9 @@ app.post('/ifttt/v1/triggers/temp_above', async (req, res) => {
   
   console.log(`trigger_identity: ${triggerIdentity}`)
   
-  // Se puede hacer aquí que compruebe si es un poll o una petición de Node-RED y si
-  // es un poll hacer que no asigne temperatura, etc
-  
   console.log(`Getting temperatures`)
+  
+  // TODO - Sacar la temperatura del cuerpo de la petición
   
   //const tempMeasure = Math.random() * (40 - 15) + 15
   
@@ -283,140 +282,19 @@ app.post('/ifttt/v1/triggers/temp_above', async (req, res) => {
   })
 });
 
-// Trigge measure
-app.post('/ifttt/v1/triggers/measure', async (req, res) => {
-  const key = req.get("IFTTT-Service-Key");
-  
-  if (key !== IFTTT_SERVICE_KEY) {
-    res.status(401).send({
-      "errors": [{
-        "message": "Channel/Service key is not correct"
-      }]
-    });
-  }
-  
-  const triggerIdentity = req.body.trigger_identity
-  if (triggerIdentity === null) {
-    return res.status(400).send({
-      errors: [{
-        message: 'trigger_identity field was missing for request'
-      }]
-    })
-  }
-  
-  const { triggerFields } = req.body
-  if (triggerFields === undefined) {
-    return res.status(400).send({
-      errors: [{
-        message: 'triggerFields object was missing from request'
-      }]
-    })
-  }
-  
-  if (!Object.prototype.hasOwnProperty.call(triggerFields, 'threshold')
-     || !Object.prototype.hasOwnProperty.call(triggerFields, 'measure')
-     || !Object.prototype.hasOwnProperty.call(triggerFields, 'uuid')
-     || !Object.prototype.hasOwnProperty.call(triggerFields, 'above_below')) {
-  //if (triggerFields.temp_threshold === undefined) {
-    console.error('Request was missing fields')
-    
-    return res.status(400).send({
-      errors: [{
-        message: 'One or more triggerFields were missing from request'
-      }]
-    })
-  }
-  
-  // TODO Comprobar si es petición inicial/poll o una de Node-RED. Si no es de Node-RED,
-  // hacer una petición http a Node-RED que guarde en variables globales la medida que se
-  // quiere tomar, etc. (p. ej. temp). En Node-RED habría que hacer que cuando se publica
-  // una medida, envíe en la petición el valor de lo que se tiene almacenado en esa
-  // variable global. Puede ser una variable global que se llame como el UUID del IAQ y
-  // que dentro guarde un JSON con toda la info.
-  
-  // Otra opción es tener esta info. en una base de datos en Mongodb o donde sea y que
-  // Node-RED pida los datos de la petición de ese IAQ cada vez que publique
-  const threshold = parseFloat(req.body.triggerFields.threshold)
-  
-  const limit = (req.body.limit !== undefined) ? req.body.limit : 50
-  //const limit = 50
-  const document = await getTriggerIdentity(triggerIdentity)
-  
-  if (req.body.initial === undefined) {
-    const docAux = {
-      // Esto esta un poquito hardcodeado hasta que se puedan meter como parámetro al crear el trigger
-      uuid: req.body.triggerFields.uuid,
-      measure: req.body.triggerFields.measure,
-      triggerIdentity: triggerIdentity,
-      threshold: threshold,
-      above_below: req.body.triggerFields.above_below,
-      ifttt_source: req.body.ifttt_source,
-      user: req.body.user
-    }
-    addNewPetition(docAux, triggerIdentity)
-  }
-  
-  if (document == null) {
-    const doc = {
-      // Añadir aquí el UUID del IAQ??
-      triggerIdentity: triggerIdentity,
-      tempThreshold: threshold,
-      events: []
-    }
-    addDocument('triggerIdentities', triggerIdentity, doc)
-  }
-  
-  console.log(`trigger_identity: ${triggerIdentity}`)
-  
-  // Se puede hacer aquí que compruebe si es un poll o una petición de Node-RED y si
-  // es un poll hacer que no asigne temperatura, etc
-  
-  console.log(`Getting temperatures`)
-  
-  //const tempMeasure = Math.random() * (40 - 15) + 15
-  
-  const measure = (req.body.temperature !== undefined) ? parseFloat(req.body.temperature) : 0
-  
-  console.log(measure)
-  
-  if (measure >= threshold) {
-    console.log('Temperature is above threshold')
-    console.log('Generating trigger data')
-    
-    updateTriggerIdentity(triggerIdentity, { lastNotification: measure })
-    const event = {
-      measure_value: measure,
-      created_at: (new Date()).toISOString(), // Must be a valid ISOString
-      meta: {
-        id: helpers.generateUniqueId(),
-        timestamp: Math.floor(Date.now() / 1000) // This returns a unix timestamp in seconds.
-      }
-    }
-    await addEvent(triggerIdentity, event)
-  }
-  
-  //const aux = getEvents(triggerIdentity, limit)
-  //console.log(aux)
-  
-  res.status(200).send({
-    data: await getEvents(triggerIdentity, limit)
-  })
-});
-
 const enableRealtimeAPI = async () => {
+  try {
+    //client.connect()
     const database = client.db('prueba_mongo')
     const mongoCollection = database.collection('triggerIdentities')
 
     const documents = await mongoCollection.find()
     const triggerIdentities = []
     documents.forEach(async (triggerIdDoc) => {
-      // Es correcto triggerIdDoc._id o sería triggerIdDoc.triggerIdentity??
-      //console.log(`${triggerIdDoc._id}: Checking if tempThreshold for Realtime API`)
-      console.log(`${triggerIdDoc.triggerIdentity}: Checking if tempThreshold for Realtime API`)
+      console.log(`${triggerIdDoc._id}: Checking if tempThreshold for Realtime API`)
       const { tempThreshold } = triggerIdDoc.tempThreshold
       
-      //triggerIdentities.push({ trigger_Identity: triggerIdDoc.id })
-      triggerIdentities.push({ trigger_Identity: triggerIdDoc.triggerIdentity })
+      triggerIdentities.push({ trigger_Identity: triggerIdDoc.id })
     })
     
     if (triggerIdentities.length > 0) {
@@ -438,6 +316,9 @@ const enableRealtimeAPI = async () => {
         console.error(error)
       })
     }
+  } finally {
+    //await client.close()
+  }
 }
 
 // listen for requests :)
