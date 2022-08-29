@@ -1,1 +1,0 @@
-{"_id":{"$oid":"63060a13286e7f2c00f60aa1"},"uuid":"7179d7d6-0f75-4b23-905b-16d670a7f7e1","measure":"hum","triggerIdentity":"3c4532c5dd517bef9accf3850e23a265ee317496","threshold":{"$numberInt":"36"},"above_below":"<","ifttt_source":{"id":"128839915","url":"https://ifttt.com/applets/FZqk8sDt"},"user":{"timezone":"Europe/Madrid"}}

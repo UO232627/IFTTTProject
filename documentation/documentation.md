@@ -257,4 +257,8 @@ Una vez pasada la validación, IFTTT se pondría en contacto para seguir con los
 
 El mantenimiento del servicio corre a cuenta del desarrollador, no de IFTTT.
 
-## NOTA - [Documentación completa de IFTTT](https://ifttt.com/docs)
+## Documentación externa
+
+- [Documentación completa de IFTTT](https://ifttt.com/docs)
+- [Repositorio buscador trenes](https://github.com/Fullercon/train-finder)
+- [Repositorio alertas tráfico](https://github.com/apastel/traffic-alert). Este es en el que se ha basado el desarrollo de la API
