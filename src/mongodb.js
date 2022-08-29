@@ -1,11 +1,24 @@
+// Mongodb configuration
+
+// Import mongodb package
 const { MongoClient } = require('mongodb')
+// Define mongodb connection uri
 const uri = "mongodb+srv://aas:aas@events.c5dzfdz.mongodb.net/?retryWrites=true&w=majority"
+// Create mongodb client
 const client = new MongoClient(uri)
+// Connect to Mongodb database
 const database = client.db("envira_ifttt")
 
 const IFTTT_SERVICE_KEY = process.env.IFTTT_SERVICE_KEY;
 
 module.exports = {
+  /**
+  * Adds a document to Mongodb collection
+  *
+  * @param {string} collection - The name of the collection where the doc will be stored
+  * @param {string} id - The triggerIdentity
+  * @param {object} doc - The document that will be saved in the collection
+  */
   addDocument: async (collection, id, doc) => {
     console.log(`Adding document ${id} to collection ${collection}`)
   
@@ -13,6 +26,14 @@ module.exports = {
     await mongoCollection.insertOne(doc)
   },
   
+  /**
+  * Updates the triggerIdentity of a document in the collection triggerIdentities
+  *
+  * @param {string} paramTriggerIdentity - The triggerIdentity of the document
+  * @param {object} updateProp - The property that will be updated
+  *
+  * CURRENTLY NOT USED
+  */
   updateTriggerIdentity: async (paramTriggerIdentity, updateProp) => {
     console.log(`Updating trigger identity ${paramTriggerIdentity}`)
   
@@ -20,6 +41,12 @@ module.exports = {
     await mongoCollection.updateOne({ triggerIdentity: paramTriggerIdentity }, { $set: updateProp })
   },
   
+  /**
+  * Adds an event to a document in triggerIdentities collection
+  *
+  * @param {stirng} triggerIdentity - The triggerIdentity of the document
+  * @param {object} event - The event that will be added to the document
+  */
   addEvent: async (paramTriggerIdentity, event) => {
     console.log(`Adding event ${event.meta.id} to triggerIdentity ${paramTriggerIdentity}`)
   
@@ -45,6 +72,14 @@ module.exports = {
     })
   },
   
+  /**
+  * Deletes a field from a document with triggerIdentity passed as parameter in triggerIdentity collection
+  *
+  * @param {string} paramTriggerIdentity - The triggerIdentity of the document
+  * @param {string} field - The field that will be deleted
+  *
+  * CURRENTLY NOT USED
+  */
   deleteTriggerIdentityField: async (paramTriggerIdentity, field) => {
     console.log(`deleting field ${field} from triggerIdentity ${paramTriggerIdentity}`)
 
@@ -65,6 +100,13 @@ module.exports = {
     }
   },
   
+  /**
+  * Gets the document with triggerIdentity passed as parameter
+  *
+  * @param {string} triggerIdentity - The triggerIdentity of the doument
+  *
+  * @return {object} - The document found
+  */
   getTriggerIdentity: async (paramTriggerIdentity) => {
     console.log(`Get triggerIdentity ${paramTriggerIdentity}`)
 
@@ -72,6 +114,13 @@ module.exports = {
     return await mongoCollection.findOne({ triggerIdentity: paramTriggerIdentity })
   },
   
+  /**
+  * Deletes a document with triggerIdentity passed as parameter in triggerIdentities collection
+  *
+  * @param {string} paramTriggerIdentity - The triggerIdentity of the document
+  *
+  * CURRENTLY NOT USED
+  */
   deleteTriggerIdentity: async (paramTriggerIdentity) => {
     console.log(`Delete triggerIdentity ${paramTriggerIdentity}`)
 
@@ -79,6 +128,14 @@ module.exports = {
     await mongoCollection.deleteOne({ triggerIdentity: paramTriggerIdentity })
   },
 
+  /**
+  * Get the events list of a document with triggerIdentity passed as parameter
+  *
+  * @param {string} paramTriggerIdentity - The triggerIdentity of the document
+  * @param {number} limit - The max amount of events
+  *
+  * @return {array} - The array with the events of the document
+  */
   getEvents: async (paramTriggerIdentity, limit) => {
     console.log('Getting events array, limit is ', limit)
 
@@ -105,6 +162,12 @@ module.exports = {
     return events
   },
 
+  /**
+  * Adds to nodered_petitions collection the neccesary values to make a valid petition
+  *
+  * @param {object} doc - The object that will be added to the collection. It contains all neccesary info
+  * @param {string} triggerIdentity - The triggerIdentity of the document
+  */
   addNewPetition: async (doc, paramTriggerIdentity) => {
     console.log(`Adding new trigger with triggerIdentity ${paramTriggerIdentity} to database`)
 
@@ -118,6 +181,11 @@ module.exports = {
     }
   },
   
+  /**
+  * Gets all documents in triggerIdentities collection to be used in RealtimeAPI
+  *
+  * @return {cursor} - The cursor with all the documents in triggerIdentities
+  */
   getRealtimeAPIDocuments: async () => {
     const mongoCollection = database.collection('triggerIdentities')
 
