@@ -1,29 +1,20 @@
-/*
-* ESTA VERSIÓN ES UNA VERSIÓN PRELIMINAR A LA VERSIÓN DOCKERIZADA, POR LO QUE PUEDE DIFERIR
-* EN LA ESTRUCTURA DEL CÓDIGO O EN COMO ESTÁ HECHO
-*/
-
 // Initialize project
-const express = require('express');
-const bodyParser = require('body-parser');
-const path = require('path');
-const pkg = require('axios')
-const { config } = require('dotenv')
+import express from 'express';
+import bodyParser from 'body-parser';
+import pkg from 'axios';
+import { config } from 'dotenv';
 
-const middleware = require('./middleware');
-const helpers = require('./helpers');
-const mongodb = require('./mongodb')
-
-const IFTTT_SERVICE_KEY = process.env.IFTTT_SERVICE_KEY;
+import * as middleware from './middleware.js';
+import * as helpers from './helpers.js';
+import * as mongodb from './mongodb.js';
 
 const { post } = pkg
 config()
 
-const app = express()
+const IFTTT_SERVICE_KEY = process.env.IFTTT_SERVICE_KEY;
 
+const app = express()
 app.use(bodyParser.json());
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, '/views'));
 
 // IFTTT endpoint to check the status of the API
 app.get('/ifttt/v1/status', middleware.serviceKeyCheck, (req, res) => {
@@ -201,7 +192,11 @@ app.get('/', (req, res) => {
   res.render('index.ejs');
 });
 
-const listener = app.listen(process.env.PORT, function() {
+/*const listener = app.listen(process.env.PORT, function() {
+  console.log('Your app is listening on port ' + listener.address().port);
+});*/
+
+const listener = app.listen(3000, function() {
   console.log('Your app is listening on port ' + listener.address().port);
 });
 
